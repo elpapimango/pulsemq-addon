@@ -34,9 +34,9 @@ option is the broker-side half of that handshake.
 
 This add-on's options cover the common cases. For anything else — TLS, ACLs,
 username/password auth, broker-to-broker bridges, OTLP export — drop a
-`pulsemq.json` into this add-on's config folder (Settings → Add-ons →
+`pulsemq.toml` into this add-on's config folder (Settings → Add-ons →
 PulseMQ → ⋮ → Show in sidebar isn't needed; the folder is
-`/addon_configs/<addon_slug>/pulsemq.json` on the host, reachable through the
+`/addon_configs/<addon_slug>/pulsemq.toml` on the host, reachable through the
 Samba/File Editor/Studio Code Server add-ons). When present, it's loaded and
 every option in it takes effect — see the
 [main repo's Configuration section](https://github.com/elpapimango/pulsemq#configuration)

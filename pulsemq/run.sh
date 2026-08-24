@@ -2,11 +2,11 @@
 set -e
 
 OPTIONS=/data/options.json
-CUSTOM_CONFIG=/config/pulsemq.json
+CUSTOM_CONFIG=/config/pulsemq.toml
 
 opt() { jq -r ".$1" "$OPTIONS"; }
 
-# A user-supplied pulsemq.json (dropped into the add-on's own config folder,
+# A user-supplied pulsemq.toml (dropped into the add-on's own config folder,
 # exposed at /config via the addon_config map) takes over the full config
 # pipeline unchanged — everything this add-on's options don't expose (ACLs,
 # TLS, bridges, OTLP, ...) is still reachable this way.

@@ -1,0 +1,39 @@
+name: PulseMQ
+version: "0.9.2"
+slug: pulsemq
+description: MQTT v5.0 / v3.1.1 / v3.1 broker (Rust, Tokio + SQLite), with Home Assistant MQTT Discovery built in
+url: https://github.com/elpapimango/pulsemq
+arch:
+  - amd64
+  - aarch64
+init: false
+startup: services
+boot: auto
+hassio_api: false
+homeassistant_api: false
+host_network: false
+watchdog: "http://[HOST]:9001/health"
+ports:
+  1883/tcp: 1883
+  9001/tcp: 9001
+ports_description:
+  1883/tcp: MQTT
+  9001/tcp: Admin HTTP — /health, Prometheus /metrics, MCP
+map:
+  - addon_config:rw
+options:
+  allow_anonymous: true
+  max_connections_per_ip: 0
+  sys_interval: 10
+  ha_discovery: true
+  ha_discovery_prefix: homeassistant
+  admin_token: ""
+  log_level: info
+schema:
+  allow_anonymous: bool
+  max_connections_per_ip: int(0,)
+  sys_interval: int(0,)
+  ha_discovery: bool
+  ha_discovery_prefix: str
+  admin_token: str
+  log_level: list(trace|debug|info|warn|error)

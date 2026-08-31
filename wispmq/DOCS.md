@@ -1,7 +1,7 @@
-# PulseMQ
+# WispMQ
 
 An MQTT v5.0 / v3.1.1 / v3.1 broker, built directly from the OASIS specs. This
-add-on wraps the [official pulsemq image](https://github.com/elpapimango/pulsemq)
+add-on wraps the [official wispmq image](https://github.com/elpapimango/wispmq)
 unchanged — see that repo for the full option/environment-variable reference
 and protocol details.
 
@@ -34,12 +34,12 @@ option is the broker-side half of that handshake.
 
 This add-on's options cover the common cases. For anything else — TLS, ACLs,
 username/password auth, broker-to-broker bridges, OTLP export — drop a
-`pulsemq.toml` into this add-on's config folder (Settings → Add-ons →
-PulseMQ → ⋮ → Show in sidebar isn't needed; the folder is
-`/addon_configs/<addon_slug>/pulsemq.toml` on the host, reachable through the
+`wispmq.toml` into this add-on's config folder (Settings → Add-ons →
+WispMQ → ⋮ → Show in sidebar isn't needed; the folder is
+`/addon_configs/<addon_slug>/wispmq.toml` on the host, reachable through the
 Samba/File Editor/Studio Code Server add-ons). When present, it's loaded and
 every option in it takes effect — see the
-[main repo's Configuration section](https://github.com/elpapimango/pulsemq#configuration)
+[main repo's Configuration section](https://github.com/elpapimango/wispmq#configuration)
 for the full key list.
 
 ## Data

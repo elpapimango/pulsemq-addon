@@ -1,8 +1,8 @@
-name: PulseMQ
-version: "0.9.3"
-slug: pulsemq
+name: WispMQ
+version: "0.9.4"
+slug: wispmq
 description: MQTT v5.0 / v3.1.1 / v3.1 broker (Rust, Tokio + SQLite), with Home Assistant MQTT Discovery built in
-url: https://github.com/elpapimango/pulsemq
+url: https://github.com/elpapimango/wispmq
 arch:
   - amd64
   - aarch64

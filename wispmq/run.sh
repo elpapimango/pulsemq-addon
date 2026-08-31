@@ -2,16 +2,16 @@
 set -e
 
 OPTIONS=/data/options.json
-CUSTOM_CONFIG=/config/pulsemq.toml
+CUSTOM_CONFIG=/config/wispmq.toml
 
 opt() { jq -r ".$1" "$OPTIONS"; }
 
-# A user-supplied pulsemq.toml (dropped into the add-on's own config folder,
+# A user-supplied wispmq.toml (dropped into the add-on's own config folder,
 # exposed at /config via the addon_config map) takes over the full config
 # pipeline unchanged — everything this add-on's options don't expose (ACLs,
 # TLS, bridges, OTLP, ...) is still reachable this way.
 if [ -f "$CUSTOM_CONFIG" ]; then
-    echo "[pulsemq-addon] using custom config file: $CUSTOM_CONFIG"
+    echo "[wispmq-addon] using custom config file: $CUSTOM_CONFIG"
     export MQTT_CONFIG_FILE="$CUSTOM_CONFIG"
 fi
 
@@ -27,4 +27,4 @@ if [ -n "$token" ] && [ "$token" != "null" ]; then
     export MQTT_ADMIN_TOKEN="$token"
 fi
 
-exec pulsemq
+exec wispmq

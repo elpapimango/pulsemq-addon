@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.9.4
+
+- Follows the broker's `pulsemq` → `wispmq` rename (name collision with
+  other projects): this add-on's repo, slug, and image reference all moved
+  to `wispmq`. `Dockerfile` now pulls
+  `ghcr.io/elpapimango/wispmq:latest` — floating, not pinned to a version
+  tag, because no `wispmq` release has been tagged yet (the last tagged
+  broker release, `0.9.3`, only ever published as
+  `ghcr.io/elpapimango/pulsemq:0.9.3`; nothing republishes it under the new
+  name). Re-pin once `wispmq` cuts its first tagged post-rename release.
+- `run.sh`'s custom-config path comment now says `/config/wispmq.toml`
+  (the broker's default config filename renamed along with everything else;
+  the `MQTT_*` option env vars themselves are unchanged).
+
 ## 0.9.3
 
 - Follows pulsemq's config file switch from JSON to TOML: `run.sh` now looks

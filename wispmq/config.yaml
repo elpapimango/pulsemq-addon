@@ -1,5 +1,5 @@
 name: WispMQ
-version: "0.9.6"
+version: "0.9.7"
 slug: wispmq
 description: MQTT v5.0 / v3.1.1 / v3.1 broker (Rust, Tokio + SQLite), with Home Assistant MQTT Discovery built in
 url: https://github.com/elpapimango/wispmq
@@ -15,12 +15,15 @@ host_network: false
 watchdog: "http://[HOST]:9001/health"
 ports:
   1883/tcp: 1883
+  8080/tcp: 8080
   9001/tcp: 9001
 ports_description:
-  1883/tcp: MQTT
-  9001/tcp: Admin HTTP — /health, Prometheus /metrics, MCP
+  1883/tcp: MQTT — plain, or TLS/mTLS once certfile/keyfile are set
+  8080/tcp: MQTT over WebSocket — only listens when "websocket" is on; plain, or WSS/mTLS once ws_certfile/ws_keyfile are set
+  9001/tcp: Admin HTTP — /health, Prometheus /metrics, MCP; plain, or HTTPS/mTLS once admin_certfile/admin_keyfile are set
 map:
   - addon_config:rw
+  - ssl:ro
 options:
   logins: []
   allow_anonymous: true
@@ -30,6 +33,16 @@ options:
   ha_discovery_prefix: homeassistant
   admin_token: ""
   log_level: info
+  websocket: false
+  certfile: ""
+  keyfile: ""
+  cafile: ""
+  ws_certfile: ""
+  ws_keyfile: ""
+  ws_cafile: ""
+  admin_certfile: ""
+  admin_keyfile: ""
+  admin_cafile: ""
 schema:
   logins:
     - username: str
@@ -41,3 +54,13 @@ schema:
   ha_discovery_prefix: str
   admin_token: str
   log_level: list(trace|debug|info|warn|error)
+  websocket: bool
+  certfile: str
+  keyfile: str
+  cafile: str
+  ws_certfile: str
+  ws_keyfile: str
+  ws_cafile: str
+  admin_certfile: str
+  admin_keyfile: str
+  admin_cafile: str

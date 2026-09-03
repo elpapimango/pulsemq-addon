@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.9.7
+
+- New TLS/mTLS options for all three listeners: `certfile`/`keyfile`/`cafile`
+  (MQTT, `1883`), `ws_certfile`/`ws_keyfile`/`ws_cafile` (WebSocket, `8080`),
+  `admin_certfile`/`admin_keyfile`/`admin_cafile` (admin, `9001`). Filenames
+  are resolved against Home Assistant's shared `/ssl` folder (now mapped
+  read-only). A `cafile` on top of a cert+key requires a trusted client
+  certificate on that listener (mutual TLS).
+- New `websocket` option enables the MQTT-over-WebSocket listener; `8080/tcp`
+  is now mapped (only listens when `websocket` is on).
+- Verified end-to-end with Docker: generated a self-signed CA/server/client
+  cert set, confirmed the MQTT port enforces mutual TLS (a connection with no
+  client cert is rejected at the handshake, one with a valid cert publishes
+  cleanly), and that `admin_certfile`/`admin_keyfile` puts `/health` behind
+  HTTPS.
+
 ## 0.9.6
 
 - **Fix: add-on failed to start at all**, no logs beyond repeated

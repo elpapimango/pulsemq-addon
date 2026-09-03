@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.9.6
+
+- **Fix: add-on failed to start at all**, no logs beyond repeated
+  `jq: error: Could not open file /data/options.json: Permission denied`.
+  `Dockerfile` dropped to the base image's non-root `USER 10001` before
+  running `run.sh`, but Supervisor writes `/data/options.json` `0600`
+  (root-only) — so every `jq`/`opt()` read in `run.sh` failed, silently
+  under `sh`'s `set -e` (a failing command inside `$(...)` doesn't trigger
+  it), and the broker launched with every option empty. Dropped the `USER`
+  override entirely; `run.sh` (and, as a result, `wispmq` itself) now runs
+  as root inside this add-on, matching the official Mosquitto add-on and
+  the standard pattern for HA add-on entrypoints — Supervisor's own
+  container/AppArmor sandboxing is the isolation boundary, not an
+  in-container UID. Verified by building the image locally and running it
+  against a root-owned `0600 options.json`: the old image reproduced the
+  exact reported error, the fixed one starts clean, loads the `logins`
+  credential, and answers `/health`.
+
 ## 0.9.5
 
 - New `logins` option: a repeatable username/password list (Settings →

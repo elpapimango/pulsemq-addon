@@ -1,5 +1,34 @@
 # Changelog
 
+## 0.9.10
+
+- Replaced the single-select `network` option (0.9.9) with **four always-on,
+  independent ports** — `1883` (Normal MQTT), `1884` (MQTT over WebSocket),
+  `8883` (Normal MQTT over TLS), `8884` (MQTT over WebSocket over TLS) — same
+  layout and labels as the official Mosquitto add-on's Network card. No
+  mode-selector option exists anymore: each TLS port comes up on its own
+  once its cert file resolves under `/ssl`, exactly as the plain ports
+  always have. This is real parity rather than 0.9.9's fake-4-way-choice:
+  **[wispmq](https://github.com/elpapimango/wispmq) 0.9.6** gained a second,
+  independent, always-TLS listener per protocol family
+  (`tls_listen_addr`/`ws_tls_listen_addr`, alongside the always-plain
+  `listen_addr`/`ws_listen_addr`), so plain and TLS can genuinely run at the
+  same time now, on separate ports — this add-on requires that broker
+  version or newer.
+- `run.sh` now exports `MQTT_WS_LISTEN_ADDR`, `MQTT_TLS_LISTEN_ADDR`, and
+  `MQTT_WS_TLS_LISTEN_ADDR` unconditionally, matching the always-configured
+  cert/key options that already existed — there's nothing left to toggle.
+- **Breaking:**
+  - Existing installs relying on 0.9.9's `network` option lose it — those
+    keys no longer exist in the schema and are silently ignored if still
+    present in `options.json`; the four ports are simply always there now.
+  - The WebSocket port moves from `8080` to `1884` (matching Mosquitto's own
+    numbering) — update anything hardcoded to the old port.
+  - Requires wispmq **0.9.6+** for `MQTT_TLS_LISTEN_ADDR`/
+    `MQTT_WS_TLS_LISTEN_ADDR` to have any effect; on an older broker image
+    those env vars are simply unrecognized and TLS won't come up on `8883`/
+    `8884` even with cert files present.
+
 ## 0.9.9
 
 - Replaced the `websocket` / `tls` / `ws_tls` toggle trio with a single

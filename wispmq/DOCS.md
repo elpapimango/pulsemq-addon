@@ -7,10 +7,18 @@ and protocol details.
 
 ## Ports
 
-- `1883/tcp` — MQTT: active for `network: mqtt` / `mqtt_tls` (TLS/mTLS on
-  `mqtt_tls`)
-- `8080/tcp` — MQTT over WebSocket: active for `network: mqtt_ws` /
-  `mqtt_ws_tls` (WSS/mTLS on `mqtt_ws_tls`)
+Four independent MQTT/WebSocket ports, always available — same layout as the
+official Mosquitto add-on. Use the Network card (Settings → Add-ons → WispMQ
+→ Configuration) to hide any you don't want published to the host; disabling
+one there doesn't turn off the underlying listener (see [TLS &
+mTLS](#tls--mtls) below for what actually does).
+
+- `1883/tcp` — **Normal MQTT**, always plain
+- `1884/tcp` — **MQTT over WebSocket**, always plain
+- `8883/tcp` — **Normal MQTT over TLS** — live once `certfile`/`keyfile`
+  resolve in `/ssl`
+- `8884/tcp` — **MQTT over WebSocket over TLS** — live once
+  `ws_certfile`/`ws_keyfile` resolve in `/ssl`
 - `9001/tcp` — Admin HTTP: `/health`, Prometheus `/metrics`, MCP; plain, or
   HTTPS/mTLS once `admin_tls` is on
 
@@ -26,11 +34,10 @@ and protocol details.
 | `ha_discovery_prefix` | `homeassistant` | Must match Home Assistant's own discovery prefix (only change this if you changed it there) |
 | `admin_token` | _(unset)_ | Bearer token required on `/metrics` and MCP; leave blank while the admin port is only reachable from inside your network |
 | `log_level` | `info` | `trace` / `debug` / `info` / `warn` / `error` |
-| `network` | `mqtt` | Which listener(s) are active: `mqtt` (plain, `1883` only), `mqtt_ws` (plain, adds WebSocket on `8080`), `mqtt_tls` (TLS/mTLS on `1883`), `mqtt_ws_tls` (WSS/mTLS on `8080` instead of plain WebSocket) |
-| `certfile` / `keyfile` | `fullchain.pem` / `privkey.pem` | Filenames in `/ssl` — only read when `network: mqtt_tls` |
-| `cafile` | _(optional, unset)_ | Filename in `/ssl` — set = require a trusted client certificate on the MQTT port (mutual TLS); only used when `network: mqtt_tls` |
-| `ws_certfile` / `ws_keyfile` | `fullchain.pem` / `privkey.pem` | Same, for the WebSocket port — only read when `network: mqtt_ws_tls` |
-| `ws_cafile` | _(optional, unset)_ | Mutual TLS on the WebSocket port |
+| `certfile` / `keyfile` | `fullchain.pem` / `privkey.pem` | Filenames in `/ssl` for the `8883` (Normal MQTT over TLS) port |
+| `cafile` | _(optional, unset)_ | Filename in `/ssl` — set = require a trusted client certificate on the `8883` port (mutual TLS) |
+| `ws_certfile` / `ws_keyfile` | `fullchain.pem` / `privkey.pem` | Same, for the `8884` (MQTT over WebSocket over TLS) port |
+| `ws_cafile` | _(optional, unset)_ | Mutual TLS on the `8884` port |
 | `admin_tls` | `false` | Turn on HTTPS for the admin port (`9001`) |
 | `admin_certfile` / `admin_keyfile` | `fullchain.pem` / `privkey.pem` | Same, for the admin port — only read when `admin_tls` is on |
 | `admin_cafile` | _(optional, unset)_ | Mutual TLS on the admin port |
@@ -61,17 +68,19 @@ other add-ons (reachable through the Samba/File Editor/Studio Code Server
 add-ons). `certfile`/`keyfile` (and their `ws_`/`admin_` counterparts)
 already default to `fullchain.pem`/`privkey.pem`, the names the **Let's
 Encrypt** add-on and HA's own HTTPS config use — if that's what's already in
-`/ssl`, there's nothing to type. TLS on the MQTT/WebSocket ports only turns
-on when `network` is set to `mqtt_tls` or `mqtt_ws_tls` respectively;
-`admin_tls` is its own toggle for the admin port. Picking the mode is what
-activates TLS, not just filling in a filename, so a fresh install with no
-cert in `/ssl` yet is unaffected by the pre-filled defaults.
+`/ssl`, there's nothing to type.
 
-Additionally setting that listener's `cafile` requires clients on it to
-present a certificate signed by that CA (mutual TLS) — a client with no
-certificate, or one from an untrusted CA, is rejected at the TLS handshake.
-A `cafile` set for a listener that `network`/`admin_tls` hasn't put into a
-TLS mode has no effect (that listener never turns TLS on to begin with).
+Unlike `websocket`/`tls` toggles in earlier versions of this add-on, the
+`8883`/`8884` TLS ports have no on/off option: they're configured
+unconditionally (same as the official Mosquitto add-on) and simply come up
+once their cert file actually resolves under `/ssl`. A fresh install with
+nothing in `/ssl` yet just runs `1883`/`1884` plain — no error, the TLS
+listeners just don't bind. `admin_tls` is still its own explicit toggle,
+since the admin port only has one address rather than a plain/TLS pair.
+
+Additionally setting a port's `cafile` requires clients on it to present a
+certificate signed by that CA (mutual TLS) — a client with no certificate,
+or one from an untrusted CA, is rejected at the TLS handshake.
 
 ## Enabling MQTT Discovery in Home Assistant
 

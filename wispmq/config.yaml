@@ -1,5 +1,5 @@
 name: WispMQ
-version: "0.9.8"
+version: "0.9.9"
 slug: wispmq
 description: MQTT v5.0 / v3.1.1 / v3.1 broker (Rust, Tokio + SQLite), with Home Assistant MQTT Discovery built in
 url: https://github.com/elpapimango/wispmq
@@ -18,8 +18,8 @@ ports:
   8080/tcp: 8080
   9001/tcp: 9001
 ports_description:
-  1883/tcp: MQTT — plain, or TLS/mTLS once "tls" is on
-  8080/tcp: MQTT over WebSocket — only listens when "websocket" is on; plain, or WSS/mTLS once "ws_tls" is also on
+  1883/tcp: MQTT — active for "mqtt" and "mqtt_tls" (TLS/mTLS on "mqtt_tls")
+  8080/tcp: MQTT over WebSocket — active for "mqtt_ws" and "mqtt_ws_tls" (TLS/mTLS on "mqtt_ws_tls")
   9001/tcp: Admin HTTP — /health, Prometheus /metrics, MCP; plain, or HTTPS/mTLS once "admin_tls" is on
 map:
   - addon_config:rw
@@ -33,11 +33,9 @@ options:
   ha_discovery_prefix: homeassistant
   admin_token: ""
   log_level: info
-  websocket: false
-  tls: false
+  network: mqtt
   certfile: fullchain.pem
   keyfile: privkey.pem
-  ws_tls: false
   ws_certfile: fullchain.pem
   ws_keyfile: privkey.pem
   admin_tls: false
@@ -54,12 +52,10 @@ schema:
   ha_discovery_prefix: str
   admin_token: str
   log_level: list(trace|debug|info|warn|error)
-  websocket: bool
-  tls: bool
+  network: list(mqtt|mqtt_ws|mqtt_tls|mqtt_ws_tls)
   certfile: str
   keyfile: str
   cafile: str?
-  ws_tls: bool
   ws_certfile: str
   ws_keyfile: str
   ws_cafile: str?

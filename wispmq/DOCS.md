@@ -7,9 +7,10 @@ and protocol details.
 
 ## Ports
 
-- `1883/tcp` — MQTT: plain, or TLS/mTLS once `tls` is on
-- `8080/tcp` — MQTT over WebSocket: only listens when `websocket` is on;
-  plain, or WSS/mTLS once `ws_tls` is also on
+- `1883/tcp` — MQTT: active for `network: mqtt` / `mqtt_tls` (TLS/mTLS on
+  `mqtt_tls`)
+- `8080/tcp` — MQTT over WebSocket: active for `network: mqtt_ws` /
+  `mqtt_ws_tls` (WSS/mTLS on `mqtt_ws_tls`)
 - `9001/tcp` — Admin HTTP: `/health`, Prometheus `/metrics`, MCP; plain, or
   HTTPS/mTLS once `admin_tls` is on
 
@@ -25,12 +26,10 @@ and protocol details.
 | `ha_discovery_prefix` | `homeassistant` | Must match Home Assistant's own discovery prefix (only change this if you changed it there) |
 | `admin_token` | _(unset)_ | Bearer token required on `/metrics` and MCP; leave blank while the admin port is only reachable from inside your network |
 | `log_level` | `info` | `trace` / `debug` / `info` / `warn` / `error` |
-| `websocket` | `false` | Enable the MQTT-over-WebSocket listener on `8080/tcp` |
-| `tls` | `false` | Turn on TLS for the MQTT port (`1883`), using `certfile`/`keyfile` |
-| `certfile` / `keyfile` | `fullchain.pem` / `privkey.pem` | Filenames in `/ssl` — only read when `tls` is on |
-| `cafile` | _(optional, unset)_ | Filename in `/ssl` — set = require a trusted client certificate on the MQTT port (mutual TLS); only used when `tls` is on |
-| `ws_tls` | `false` | Turn on TLS (WSS) for the WebSocket port; ignored unless `websocket` is also on |
-| `ws_certfile` / `ws_keyfile` | `fullchain.pem` / `privkey.pem` | Same, for the WebSocket port — only read when `ws_tls` is on |
+| `network` | `mqtt` | Which listener(s) are active: `mqtt` (plain, `1883` only), `mqtt_ws` (plain, adds WebSocket on `8080`), `mqtt_tls` (TLS/mTLS on `1883`), `mqtt_ws_tls` (WSS/mTLS on `8080` instead of plain WebSocket) |
+| `certfile` / `keyfile` | `fullchain.pem` / `privkey.pem` | Filenames in `/ssl` — only read when `network: mqtt_tls` |
+| `cafile` | _(optional, unset)_ | Filename in `/ssl` — set = require a trusted client certificate on the MQTT port (mutual TLS); only used when `network: mqtt_tls` |
+| `ws_certfile` / `ws_keyfile` | `fullchain.pem` / `privkey.pem` | Same, for the WebSocket port — only read when `network: mqtt_ws_tls` |
 | `ws_cafile` | _(optional, unset)_ | Mutual TLS on the WebSocket port |
 | `admin_tls` | `false` | Turn on HTTPS for the admin port (`9001`) |
 | `admin_certfile` / `admin_keyfile` | `fullchain.pem` / `privkey.pem` | Same, for the admin port — only read when `admin_tls` is on |
@@ -62,17 +61,17 @@ other add-ons (reachable through the Samba/File Editor/Studio Code Server
 add-ons). `certfile`/`keyfile` (and their `ws_`/`admin_` counterparts)
 already default to `fullchain.pem`/`privkey.pem`, the names the **Let's
 Encrypt** add-on and HA's own HTTPS config use — if that's what's already in
-`/ssl`, there's nothing to type. Each listener's TLS only turns on when its
-own toggle does: `tls` for the MQTT port, `ws_tls` for the WebSocket port
-(also needs `websocket: true`), `admin_tls` for the admin port — flipping the
-toggle is what activates it, not just filling in a filename, so a fresh
-install with no cert in `/ssl` yet is unaffected by the pre-filled defaults.
+`/ssl`, there's nothing to type. TLS on the MQTT/WebSocket ports only turns
+on when `network` is set to `mqtt_tls` or `mqtt_ws_tls` respectively;
+`admin_tls` is its own toggle for the admin port. Picking the mode is what
+activates TLS, not just filling in a filename, so a fresh install with no
+cert in `/ssl` yet is unaffected by the pre-filled defaults.
 
 Additionally setting that listener's `cafile` requires clients on it to
 present a certificate signed by that CA (mutual TLS) — a client with no
 certificate, or one from an untrusted CA, is rejected at the TLS handshake.
-A `cafile` set on a listener whose own TLS toggle is off has no effect (that
-listener never turns TLS on to begin with).
+A `cafile` set for a listener that `network`/`admin_tls` hasn't put into a
+TLS mode has no effect (that listener never turns TLS on to begin with).
 
 ## Enabling MQTT Discovery in Home Assistant
 

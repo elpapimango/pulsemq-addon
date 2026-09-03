@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.9.9
+
+- Replaced the `websocket` / `tls` / `ws_tls` toggle trio with a single
+  `network` option — a 4-way list (`mqtt`, `mqtt_ws`, `mqtt_tls`,
+  `mqtt_ws_tls`) picking exactly one MQTT/WebSocket listener mode, matching
+  the official Mosquitto add-on's mode-selector convention instead of three
+  independent booleans that implied combinations the broker didn't actually
+  support cleanly. `admin_tls` is unchanged (the admin port stays a separate
+  toggle). `certfile`/`keyfile`/`ws_certfile`/`ws_keyfile` keep their
+  `fullchain.pem`/`privkey.pem` defaults; `run.sh` now derives
+  `MQTT_WS_LISTEN_ADDR` and the TLS cert env vars from `network` via a
+  `case` instead of three independent `if` checks.
+- **Breaking:** existing installs with `websocket`/`tls`/`ws_tls` set in
+  their options need to re-pick a `network` mode after upgrading — those
+  three keys no longer exist in the schema and are silently ignored if
+  still present in `options.json`.
+
 ## 0.9.8
 
 - `certfile`/`keyfile` (and their `ws_`/`admin_` counterparts) now default to

@@ -50,13 +50,13 @@ fi
 # /ssl folder (mapped read-only above) — the same folder most setups already
 # have a cert in for HA's own HTTPS, hence certfile/keyfile defaulting to the
 # fullchain.pem/privkey.pem names that convention (and the Let's Encrypt
-# add-on) uses. certfile/keyfile only take effect when their listener's own
-# *_tls toggle is on — a real default filename must not silently turn TLS on
-# for an install that hasn't opted in (or doesn't have that file yet). Each
-# *_cafile is optional on top of a cert+key: setting it requires (mutual TLS)
-# a trusted client certificate on that listener; wispmq itself rejects a
-# cafile set without a matching cert+key, so no extra validation is needed
-# here.
+# add-on) uses. certfile/keyfile only take effect when "network" is set to
+# one of the two TLS modes below — a real default filename must not silently
+# turn TLS on for an install that hasn't opted in (or doesn't have that file
+# yet). Each *_cafile is optional on top of a cert+key: setting it requires
+# (mutual TLS) a trusted client certificate on that listener; wispmq itself
+# rejects a cafile set without a matching cert+key, so no extra validation
+# is needed here.
 cert_arg() {
     file="$(opt "$1")"
     if [ -n "$file" ] && [ "$file" != "null" ]; then
@@ -64,20 +64,24 @@ cert_arg() {
     fi
 }
 
-if [ "$(opt tls)" = "true" ]; then
-    cert_arg certfile MQTT_TLS_CERT
-    cert_arg keyfile MQTT_TLS_KEY
-    cert_arg cafile MQTT_TLS_CLIENT_CA
-fi
+network="$(opt network)"
 
-if [ "$(opt websocket)" = "true" ]; then
-    export MQTT_WS_LISTEN_ADDR="0.0.0.0:8080"
-    if [ "$(opt ws_tls)" = "true" ]; then
+case "$network" in
+    mqtt_tls)
+        cert_arg certfile MQTT_TLS_CERT
+        cert_arg keyfile MQTT_TLS_KEY
+        cert_arg cafile MQTT_TLS_CLIENT_CA
+        ;;
+    mqtt_ws)
+        export MQTT_WS_LISTEN_ADDR="0.0.0.0:8080"
+        ;;
+    mqtt_ws_tls)
+        export MQTT_WS_LISTEN_ADDR="0.0.0.0:8080"
         cert_arg ws_certfile MQTT_WS_TLS_CERT
         cert_arg ws_keyfile MQTT_WS_TLS_KEY
         cert_arg ws_cafile MQTT_WS_TLS_CLIENT_CA
-    fi
-fi
+        ;;
+esac
 
 if [ "$(opt admin_tls)" = "true" ]; then
     cert_arg admin_certfile MQTT_ADMIN_TLS_CERT

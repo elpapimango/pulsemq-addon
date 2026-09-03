@@ -1,5 +1,5 @@
 name: WispMQ
-version: "0.9.4"
+version: "0.9.5"
 slug: wispmq
 description: MQTT v5.0 / v3.1.1 / v3.1 broker (Rust, Tokio + SQLite), with Home Assistant MQTT Discovery built in
 url: https://github.com/elpapimango/wispmq
@@ -22,6 +22,7 @@ ports_description:
 map:
   - addon_config:rw
 options:
+  logins: []
   allow_anonymous: true
   max_connections_per_ip: 0
   sys_interval: 10
@@ -30,6 +31,9 @@ options:
   admin_token: ""
   log_level: info
 schema:
+  logins:
+    - username: str
+      password: password
   allow_anonymous: bool
   max_connections_per_ip: int(0,)
   sys_interval: int(0,)

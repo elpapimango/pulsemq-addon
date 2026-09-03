@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.9.5
+
+- New `logins` option: a repeatable username/password list (Settings →
+  Add-ons → WispMQ → Configuration), mirroring the official Mosquitto broker
+  add-on's own "logins" option. `run.sh` regenerates `/data/passwd` from it
+  on every start via `wispmq --hash-password` (using its `MQTT_HASH_PASSWORD`
+  env-var fallback for non-interactive hashing) and exports
+  `MQTT_PASSWORD_FILE` — only when `logins` is non-empty, so an add-on with
+  no logins configured behaves exactly as before. Per-user ACLs are still
+  advanced-only (a dropped-in `acl.toml`).
+- Follows the broker's ACL file switching from JSON to TOML (wispmq 0.9.5):
+  the Advanced-configuration note now says `acl.toml`, not `acl.json`.
+
 ## 0.9.4
 
 - Follows the broker's `pulsemq` → `wispmq` rename (name collision with

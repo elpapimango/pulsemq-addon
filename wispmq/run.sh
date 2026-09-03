@@ -27,4 +27,23 @@ if [ -n "$token" ] && [ "$token" != "null" ]; then
     export MQTT_ADMIN_TOKEN="$token"
 fi
 
+# Regenerate the password file from the "logins" option on every boot, so
+# options.json stays the single source of truth (removing a login in the UI
+# actually removes their access, rather than leaving a stale credential
+# behind). No logins configured => no password file, same as today.
+LOGIN_COUNT="$(jq -r '.logins | length' "$OPTIONS")"
+if [ "$LOGIN_COUNT" -gt 0 ]; then
+    PASSWD_FILE=/data/passwd
+    : > "$PASSWD_FILE"
+    i=0
+    while [ "$i" -lt "$LOGIN_COUNT" ]; do
+        username="$(jq -r ".logins[$i].username" "$OPTIONS")"
+        password="$(jq -r ".logins[$i].password" "$OPTIONS")"
+        MQTT_HASH_PASSWORD="$password" wispmq --hash-password "$username" >> "$PASSWD_FILE"
+        i=$((i + 1))
+    done
+    chmod 600 "$PASSWD_FILE"
+    export MQTT_PASSWORD_FILE="$PASSWD_FILE"
+fi
+
 exec wispmq

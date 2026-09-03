@@ -1,5 +1,26 @@
 # Changelog
 
+## 0.9.8
+
+- `certfile`/`keyfile` (and their `ws_`/`admin_` counterparts) now default to
+  `fullchain.pem`/`privkey.pem` — the names the **Let's Encrypt** add-on and
+  HA's own HTTPS config use, so a `/ssl` already set up for those needs no
+  typing here.
+- New `tls` / `ws_tls` / `admin_tls` toggles gate each listener's TLS
+  independently of its cert/key filenames — required once those filenames
+  have real defaults, since "a filename is set" can no longer double as "TLS
+  is wanted" (that would auto-enable TLS, or fail to start, for anyone who
+  happens to have `fullchain.pem`/`privkey.pem` in `/ssl` for an unrelated
+  reason, or doesn't have it yet). Each listener stays fully plain — even
+  with the default filenames present in `/ssl` — until its own toggle is on.
+- `cafile`/`ws_cafile`/`admin_cafile` are now optional (`str?`) instead of an
+  always-shown empty string, so the Supervisor UI presents them as a real
+  add/remove toggle rather than a blank text field.
+- Verified with Docker: default options (`tls`/`ws_tls`/`admin_tls` all off)
+  start clean even with no cert files in `/ssl` at all; flipping `tls: true`
+  with nothing else changed picks up the default `fullchain.pem`/`privkey.pem`
+  and the log line changes to `(TLS)`.
+
 ## 0.9.7
 
 - New TLS/mTLS options for all three listeners: `certfile`/`keyfile`/`cafile`

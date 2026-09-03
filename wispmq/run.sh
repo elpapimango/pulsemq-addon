@@ -48,29 +48,41 @@ fi
 
 # TLS/mTLS certs are referenced by filename against Home Assistant's shared
 # /ssl folder (mapped read-only above) — the same folder most setups already
-# have a cert in for HA's own HTTPS. Each *_cafile is optional on top of its
-# cert+key: setting it requires (mutual TLS) a trusted client certificate on
-# that listener; wispmq itself rejects a cafile set without a matching
-# cert+key, so no extra validation is needed here.
+# have a cert in for HA's own HTTPS, hence certfile/keyfile defaulting to the
+# fullchain.pem/privkey.pem names that convention (and the Let's Encrypt
+# add-on) uses. certfile/keyfile only take effect when their listener's own
+# *_tls toggle is on — a real default filename must not silently turn TLS on
+# for an install that hasn't opted in (or doesn't have that file yet). Each
+# *_cafile is optional on top of a cert+key: setting it requires (mutual TLS)
+# a trusted client certificate on that listener; wispmq itself rejects a
+# cafile set without a matching cert+key, so no extra validation is needed
+# here.
 cert_arg() {
     file="$(opt "$1")"
     if [ -n "$file" ] && [ "$file" != "null" ]; then
         export "$2=/ssl/$file"
     fi
 }
-cert_arg certfile MQTT_TLS_CERT
-cert_arg keyfile MQTT_TLS_KEY
-cert_arg cafile MQTT_TLS_CLIENT_CA
+
+if [ "$(opt tls)" = "true" ]; then
+    cert_arg certfile MQTT_TLS_CERT
+    cert_arg keyfile MQTT_TLS_KEY
+    cert_arg cafile MQTT_TLS_CLIENT_CA
+fi
 
 if [ "$(opt websocket)" = "true" ]; then
     export MQTT_WS_LISTEN_ADDR="0.0.0.0:8080"
-    cert_arg ws_certfile MQTT_WS_TLS_CERT
-    cert_arg ws_keyfile MQTT_WS_TLS_KEY
-    cert_arg ws_cafile MQTT_WS_TLS_CLIENT_CA
+    if [ "$(opt ws_tls)" = "true" ]; then
+        cert_arg ws_certfile MQTT_WS_TLS_CERT
+        cert_arg ws_keyfile MQTT_WS_TLS_KEY
+        cert_arg ws_cafile MQTT_WS_TLS_CLIENT_CA
+    fi
 fi
 
-cert_arg admin_certfile MQTT_ADMIN_TLS_CERT
-cert_arg admin_keyfile MQTT_ADMIN_TLS_KEY
-cert_arg admin_cafile MQTT_ADMIN_TLS_CLIENT_CA
+if [ "$(opt admin_tls)" = "true" ]; then
+    cert_arg admin_certfile MQTT_ADMIN_TLS_CERT
+    cert_arg admin_keyfile MQTT_ADMIN_TLS_KEY
+    cert_arg admin_cafile MQTT_ADMIN_TLS_CLIENT_CA
+fi
 
 exec wispmq

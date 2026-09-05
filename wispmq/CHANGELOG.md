@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.9.11
+
+- Base image re-pinned from `wispmq:latest` to `wispmq:0.9.8` — wispmq's
+  first tagged post-rename release. `:latest` tracked `main` directly with
+  no version boundary; a version tag means this add-on only picks up a
+  newer broker when someone deliberately bumps the pin after checking it
+  against this add-on's config/run.sh, not on every wispmq commit.
+- **Fix**: `run.sh` used to export both `MQTT_TLS_LISTEN_ADDR` and
+  `MQTT_WS_TLS_LISTEN_ADDR` unconditionally, on the (untested, and as of
+  wispmq 0.9.6 simply wrong) assumption that a missing cert would just
+  leave that one listener down. wispmq actually hard-fails startup —
+  `Config::validate` rejects a `*_TLS_LISTEN_ADDR` set without its
+  matching cert+key — so **every fresh install with nothing in `/ssl`
+  yet failed to start at all**, caught while smoke-testing the 0.9.8
+  re-pin above. Each TLS listen address is now only exported once both
+  its cert and key resolve under `/ssl`; a fresh install runs the two
+  plain listeners only, and dropping a cert+key pair in and restarting
+  brings the matching TLS listener up — verified against the real
+  `wispmq:0.9.8` image, both without and with a cert configured.
+
 ## 0.9.10
 
 - Replaced the single-select `network` option (0.9.9) with **four always-on,

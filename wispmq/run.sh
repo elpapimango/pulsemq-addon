@@ -61,25 +61,35 @@ cert_arg() {
     fi
 }
 
-# All four MQTT/WebSocket listeners are configured unconditionally, exactly
-# like the official Mosquitto add-on: there is no per-listener on/off option
-# here, because Supervisor's own port-mapping state (the Network card) is not
-# visible to options.json in the first place — the same reason Mosquitto's
-# own entrypoint can't gate on it either. Each dedicated TLS listener
-# (wispmq 0.9.6+: MQTT_TLS_LISTEN_ADDR / MQTT_WS_TLS_LISTEN_ADDR) only
-# actually comes up if its cert file resolves under /ssl; a fresh install
-# with nothing in /ssl yet just runs the two plain listeners, and a missing
-# cert logs an error for that one listener rather than failing the broker.
+# The two plain listeners are unconditional, exactly like the official
+# Mosquitto add-on's Network card. The two dedicated TLS listeners are
+# NOT unconditional, unlike an earlier version of this comment claimed:
+# wispmq (0.9.6+) hard-fails at startup if a *_TLS_LISTEN_ADDR is set
+# without its matching cert+key (Config::validate — a deliberate
+# fail-closed design, not something this add-on should route around), so
+# each TLS listen address is only exported at all once both its cert and
+# key resolve under /ssl. A fresh install with nothing in /ssl yet runs
+# only the two plain listeners; dropping a cert+key pair into /ssl and
+# restarting brings the matching TLS listener up.
 export MQTT_WS_LISTEN_ADDR="0.0.0.0:1884"
-export MQTT_TLS_LISTEN_ADDR="0.0.0.0:8883"
-cert_arg certfile MQTT_TLS_CERT
-cert_arg keyfile MQTT_TLS_KEY
-cert_arg cafile MQTT_TLS_CLIENT_CA
 
-export MQTT_WS_TLS_LISTEN_ADDR="0.0.0.0:8884"
-cert_arg ws_certfile MQTT_WS_TLS_CERT
-cert_arg ws_keyfile MQTT_WS_TLS_KEY
-cert_arg ws_cafile MQTT_WS_TLS_CLIENT_CA
+tls_certfile="$(opt certfile)"
+tls_keyfile="$(opt keyfile)"
+if [ -n "$tls_certfile" ] && [ "$tls_certfile" != "null" ] && [ -n "$tls_keyfile" ] && [ "$tls_keyfile" != "null" ]; then
+    export MQTT_TLS_LISTEN_ADDR="0.0.0.0:8883"
+    export MQTT_TLS_CERT="/ssl/$tls_certfile"
+    export MQTT_TLS_KEY="/ssl/$tls_keyfile"
+    cert_arg cafile MQTT_TLS_CLIENT_CA
+fi
+
+ws_certfile="$(opt ws_certfile)"
+ws_keyfile="$(opt ws_keyfile)"
+if [ -n "$ws_certfile" ] && [ "$ws_certfile" != "null" ] && [ -n "$ws_keyfile" ] && [ "$ws_keyfile" != "null" ]; then
+    export MQTT_WS_TLS_LISTEN_ADDR="0.0.0.0:8884"
+    export MQTT_WS_TLS_CERT="/ssl/$ws_certfile"
+    export MQTT_WS_TLS_KEY="/ssl/$ws_keyfile"
+    cert_arg ws_cafile MQTT_WS_TLS_CLIENT_CA
+fi
 
 if [ "$(opt admin_tls)" = "true" ]; then
     cert_arg admin_certfile MQTT_ADMIN_TLS_CERT

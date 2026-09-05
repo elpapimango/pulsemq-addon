@@ -2,11 +2,14 @@
 # (github.com/elpapimango/wispmq) as-is and only adds the glue needed to
 # read Home Assistant's add-on options. No Rust build happens here.
 #
-# Pinned to :latest, not a version tag: this add-on wrapped pulsemq:0.9.3
-# before the pulsemq -> wispmq rename, and no wispmq:0.9.3 image exists (or
-# ever will) under the new name. Re-pin to a real version tag once wispmq
-# cuts its first tagged post-rename release.
-FROM ghcr.io/elpapimango/wispmq:latest
+# Pinned to a real version tag (wispmq's first tagged post-rename release),
+# not :latest — this add-on requires 0.9.6+ for the dedicated TLS listener
+# addresses (tls_listen_addr/ws_tls_listen_addr) to have any effect; an
+# older or a future-but-untested wispmq image should not silently become
+# this add-on's base just because someone pushed to wispmq's main branch.
+# Bump this deliberately when a newer wispmq release has been checked
+# against this add-on's config/run.sh.
+FROM ghcr.io/elpapimango/wispmq:0.9.8
 
 USER root
 RUN apt-get update \
